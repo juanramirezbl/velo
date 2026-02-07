@@ -1,26 +1,58 @@
-import SwiftUI
-import AVFoundation
+import Foundation
+import AVFoundation //Apple utils
+import Combine // connect data with screen
 
-struct CameraPreview: UIViewRepresentable {
+class CameraManager: NSObject, ObservableObject {
     
-    let session: AVCaptureSession
+    @Published var permissionGranted = false
     
-    func makeUIView(context: Context) -> VideoPreviewView {
-        let view = VideoPreviewView()
-        view.videoPreviewLayer.session = session
-        view.videoPreviewLayer.videoGravity = .resizeAspectFill
-        return view
-    }
+    let session = AVCaptureSession()
+    private let sessionQueue = DispatchQueue(label: "sessionQueue") //better processing
     
-    func updateUIView(_ uiView: VideoPreviewView, context: Context) {}
-    
-    class VideoPreviewView: UIView {
-        override class var layerClass: AnyClass {
-            AVCaptureVideoPreviewLayer.self
+    //permission
+    override init() {
+            super.init()
+            checkPermission()
+            sessionQueue.async { [weak self] in
+                self?.configureSession()
+                self?.session.startRunning()
+            }
         }
         
-        var videoPreviewLayer: AVCaptureVideoPreviewLayer {
-            return layer as! AVCaptureVideoPreviewLayer
+        func checkPermission() {
+            switch AVCaptureDevice.authorizationStatus(for: .video) {
+            case .authorized:
+                permissionGranted = true
+            case .notDetermined:
+                requestPermission()
+            default:
+                permissionGranted = false
+            }
         }
-    }
+        
+        func requestPermission() {
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                DispatchQueue.main.async {
+                    self?.permissionGranted = granted
+                }
+            }
+        }
+    
+    //configuration
+    func configureSession() {
+            guard permissionGranted else { return }
+            
+            session.beginConfiguration()
+            session.sessionPreset = .hd1920x1080
+            
+            guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
+            
+            guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else { return }
+            
+            if session.canAddInput(videoDeviceInput) {
+                session.addInput(videoDeviceInput)
+            }
+            
+            session.commitConfiguration()
+        }
 }
