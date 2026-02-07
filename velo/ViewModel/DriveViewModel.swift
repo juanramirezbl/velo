@@ -1,7 +1,11 @@
-//
-//  DriveViewModel.swift
-//  velo
-//
-//  Created by Juan Ramirez Blanco on 7/2/26.
-//
+import Foundation
+import Combine
 
+class DriveViewModel: ObservableObject {
+    
+    let cameraManager = CameraManager()
+    
+    init() {
+        cameraManager.checkPermission()
+    }
+}
