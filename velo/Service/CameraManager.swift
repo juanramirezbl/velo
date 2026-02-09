@@ -9,6 +9,9 @@ class CameraManager: NSObject, ObservableObject {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "sessionQueue") //better processing
     
+    //data for Yolo
+    private let videoOutput = AVCaptureVideoDataOutput()
+    
     //permission
     override init() {
             super.init()
@@ -51,8 +54,18 @@ class CameraManager: NSObject, ObservableObject {
             
             if session.canAddInput(videoDeviceInput) {
                 session.addInput(videoDeviceInput)
+                
+                videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+                            
+                videoOutput.setSampleBufferDelegate(self, queue: sessionQueue)// background = sessionQueue
             }
             
             session.commitConfiguration()
         }
+}
+extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
+    }
 }
