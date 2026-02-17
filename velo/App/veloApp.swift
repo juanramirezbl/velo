@@ -1,38 +1,31 @@
 import SwiftUI
-import SwiftData
 
 @main
 struct veloApp: App {
-    @StateObject private var sessionManager = SessionManager()
-    
+    @StateObject private var dependencies = AppDependencies()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .modelContainer(for: [User.self, Detection.self])
-                .environmentObject(sessionManager)
+                .environmentObject(dependencies.sessionManager)
+                .environmentObject(dependencies)
         }
     }
 }
 
 struct ContentView: View {
     @EnvironmentObject var sessionManager: SessionManager
-    @Environment(\.modelContext) private var modelContext
-    
+    @EnvironmentObject var dependencies: AppDependencies
+
     var body: some View {
         Group {
             if sessionManager.isUserLoggedIn {
                 HomeView(
-                    viewModel: HomeViewModel(
-                        userRepository: UserRepository(modelContext: modelContext),
-                        sessionManager: sessionManager
-                    )
+                    viewModel: dependencies.makeHomeViewModel()
                 )
             } else {
                 LoginView(
-                    viewModel: LoginViewModel(
-                        userRepository: UserRepository(modelContext: modelContext),
-                        sessionManager: sessionManager
-                    )
+                    viewModel: dependencies.makeLoginViewModel()
                 )
             }
         }

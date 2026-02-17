@@ -7,7 +7,7 @@ struct DashboardView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                CameraPreview(cameraManager: viewModel.cameraManager)
+                CameraPreview(session: viewModel.cameraManager.session)
                     .ignoresSafeArea()
                 
                 ForEach(viewModel.cameraManager.detections) { detection in

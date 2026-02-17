@@ -13,7 +13,16 @@ class CameraManager: NSObject, ObservableObject, CameraManagerProtocol {
     
     private var visionRequests = [VNRequest]()
     private var lastDetectionTimes: [String: Date] = [:]
-    private let speechService: SpeechServiceProtocol  
+    private let speechService: SpeechServiceProtocol
+    
+    var recentSignsPublisher: AnyPublisher<[CapturedSign], Never> {
+        $recentSigns.eraseToAnyPublisher()
+    }
+
+    var objectDidChange: AnyPublisher<Void, Never> {
+        objectWillChange.map { _ in () }.eraseToAnyPublisher()
+    }
+
     
     init(speechService: SpeechServiceProtocol = SpeechService()) {
         self.speechService = speechService

@@ -1,26 +1,25 @@
 import SwiftUI
-import SwiftData
 
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject var sessionManager: SessionManager
-    @Environment(\.modelContext) private var modelContext
-    
+    @EnvironmentObject var dependencies: AppDependencies
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 40) {
-                
+
                 VStack(spacing: 10) {
                     Image(systemName: "person.circle.fill")
                         .resizable()
                         .frame(width: 80, height: 80)
                         .foregroundColor(.blue)
                         .padding(.top, 40)
-                    
+
                     Text("Ey, \(viewModel.currentUser?.name ?? "Driver")")
                         .font(.title2)
                         .bold()
-                    
+
                     HStack {
                         Image(systemName: "car.fill")
                         Text(viewModel.currentUser?.licensePlate ?? "Without Plate")
@@ -33,16 +32,12 @@ struct HomeView: View {
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(10)
                 }
-                
+
                 Spacer()
-                
+
                 NavigationLink(destination:
                     DashboardView(
-                        viewModel: DashboardViewModel(
-                            detectionRepository: DetectionRepository(modelContext: modelContext),
-                            userRepository: UserRepository(modelContext: modelContext),
-                            sessionManager: sessionManager
-                        )
+                        viewModel: dependencies.makeDashboardViewModel()
                     )
                 ) {
                     HStack {
@@ -60,13 +55,10 @@ struct HomeView: View {
                     .cornerRadius(20)
                     .shadow(radius: 5)
                 }
-                
+
                 NavigationLink(destination:
                     HistoryView(
-                        viewModel: HistoryViewModel(
-                            userId: viewModel.currentUserId,
-                            detectionRepository: DetectionRepository(modelContext: modelContext)
-                        )
+                        viewModel: dependencies.makeHistoryViewModel(userId: viewModel.currentUserId)
                     )
                 ) {
                     HStack {
@@ -88,9 +80,9 @@ struct HomeView: View {
                             .stroke(Color.blue, lineWidth: 2)
                     )
                 }
-                
+
                 Spacer()
-                
+
                 Button("Log out") {
                     viewModel.logout()
                 }
