@@ -1,7 +1,9 @@
-d   //
-//  Untitled.swift
-//  velo
-//
-//  Created by Juan Ramirez Blanco on 17/2/26.
-//
+import UIKit
+
+struct CapturedSign: Identifiable {
+    let id = UUID()
+    let image: UIImage
+    let label: String
+    let date: Date
+}
 

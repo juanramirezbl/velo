@@ -5,20 +5,6 @@ import UIKit
 import Combine
 import SwiftUI
 
-struct CapturedSign: Identifiable {
-    let id = UUID()
-    let image: UIImage
-    let label: String
-    let date: Date
-}
-
-struct DetectedObject: Identifiable {
-    let id = UUID()
-    let label: String
-    let confidence: Double
-    let rect: CGRect
-    let color: Color
-}
 
 class CameraManager: NSObject, ObservableObject {
     let session = AVCaptureSession()
@@ -89,7 +75,6 @@ class CameraManager: NSObject, ObservableObject {
                     label: obs.labels.first?.identifier ?? "Unknown",
                     confidence: Double(obs.confidence),
                     rect: obs.boundingBox,
-                    color: .blue
                 )
             }
             
