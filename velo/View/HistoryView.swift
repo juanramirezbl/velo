@@ -1,30 +1,18 @@
 import SwiftUI
-import SwiftData
 
 struct HistoryView: View {
-    let userId: String
-    @Query private var detections: [Detection]
-    
-    init(userId: String) {
-        self.userId = userId
-        let uuid = UUID(uuidString: userId) ?? UUID()
-        _detections = Query(
-            filter: #Predicate<Detection> { $0.user?.id == uuid },
-            sort: \.timestamp,
-            order: .reverse
-        )
-    }
+    @ObservedObject var viewModel: HistoryViewModel
     
     var body: some View {
         List {
-            if detections.isEmpty {
+            if viewModel.detections.isEmpty {
                 ContentUnavailableView(
                     "Sin detecciones",
                     systemImage: "eye.slash",
                     description: Text("No se han detectado señales para este coche.")
                 )
             } else {
-                ForEach(detections) { detection in
+                ForEach(viewModel.detections) { detection in
                     HStack(spacing: 15) {
                         if let data = detection.imageData, let uiImage = UIImage(data: data) {
                             Image(uiImage: uiImage)
@@ -61,17 +49,11 @@ struct HistoryView: View {
                     }
                     .padding(.vertical, 4)
                 }
-                .onDelete(perform: deleteDetections)
+                .onDelete(perform: viewModel.deleteDetection)
             }
         }
         .navigationTitle("Detecciones")
-    }
-    
-    @Environment(\.modelContext) var context
-    func deleteDetections(at offsets: IndexSet) {
-        for index in offsets {
-            let detection = detections[index]
-            context.delete(detection)
-        }
+        .onAppear { viewModel.loadDetections() }
     }
 }
+

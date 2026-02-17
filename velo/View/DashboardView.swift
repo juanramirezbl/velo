@@ -1,60 +1,17 @@
 import SwiftUI
-import SwiftData
 
 struct DashboardView: View {
     @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) var modelContext
+    @ObservedObject var viewModel: DashboardViewModel
     
-    @StateObject private var cameraManager = CameraManager()
-    
-    @AppStorage("currentUserId") private var currentUserId: String = ""
-    
-    @Query private var users: [User]
-    
-    var currentUser: User? {
-        users.first { $0.id.uuidString == currentUserId }
-    }
-
-    func calculateBox(for detection: DetectedObject, in geometry: GeometryProxy) -> CGRect {
-        let screenWidth = geometry.size.width
-        let screenHeight = geometry.size.height
-        let videoWidth: CGFloat = 1080
-        let videoHeight: CGFloat = 1920
-        
-        let screenAspectRatio = screenWidth / screenHeight
-        let videoAspectRatio = videoWidth / videoHeight
-        
-        var scale: CGFloat
-        var xOffset: CGFloat = 0
-        var yOffset: CGFloat = 0
-        
-        if screenAspectRatio < videoAspectRatio {
-            scale = screenHeight / videoHeight
-            let scaledWidth = videoWidth * scale
-            xOffset = (scaledWidth - screenWidth) / 2
-        } else {
-            scale = screenWidth / videoWidth
-            let scaledHeight = videoHeight * scale
-            yOffset = (scaledHeight - screenHeight) / 2
-        }
-        
-        let rect = detection.rect
-        let width = rect.width * videoWidth * scale
-        let height = rect.height * videoHeight * scale
-        let x = (rect.minX * videoWidth * scale) - xOffset
-        let y = (screenHeight - (rect.minY * videoHeight * scale) - height) + yOffset
-        
-        return CGRect(x: x, y: y, width: width, height: height)
-    }
-
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                CameraPreview(cameraManager: cameraManager)
+                CameraPreview(cameraManager: viewModel.cameraManager)
                     .ignoresSafeArea()
                 
-                ForEach(cameraManager.detections) { detection in
-                    let box = calculateBox(for: detection, in: geometry)
+                ForEach(viewModel.cameraManager.detections) { detection in
+                    let box = viewModel.calculateBox(for: detection, in: geometry)
                     ZStack(alignment: .topLeading) {
                         Rectangle()
                             .stroke(Color.blue, lineWidth: 3)
@@ -80,8 +37,7 @@ struct DashboardView: View {
                         Spacer()
                         
                         VStack(alignment: .trailing, spacing: 10) {
-                            
-                            if let latestSign = cameraManager.recentSigns.first {
+                            if let latestSign = viewModel.cameraManager.recentSigns.first {
                                 VStack {
                                     Image(uiImage: latestSign.image)
                                         .resizable()
@@ -102,9 +58,9 @@ struct DashboardView: View {
                                 .transition(.scale)
                             }
                             
-                            if cameraManager.recentSigns.count > 1 {
+                            if viewModel.cameraManager.recentSigns.count > 1 {
                                 HStack(spacing: 8) {
-                                    ForEach(cameraManager.recentSigns.dropFirst()) { sign in
+                                    ForEach(viewModel.cameraManager.recentSigns.dropFirst()) { sign in
                                         Image(uiImage: sign.image)
                                             .resizable()
                                             .scaledToFit()
@@ -126,7 +82,7 @@ struct DashboardView: View {
                     Spacer()
                     
                     Button(action: {
-                        cameraManager.stop()
+                        viewModel.stopCamera()
                         dismiss()
                     }) {
                         HStack {
@@ -146,35 +102,9 @@ struct DashboardView: View {
             }
         }
         .ignoresSafeArea()
-        .onAppear { cameraManager.start() }
-        .onDisappear { cameraManager.stop() }
-        .animation(.spring(), value: cameraManager.recentSigns.count)
-        
-        .onChange(of: cameraManager.recentSigns.count) { oldValue, newValue in
-            if newValue > oldValue, let newSign = cameraManager.recentSigns.first {
-                saveDetectionToDatabase(sign: newSign)
-            }
-        }
-    }
-    
-    private func saveDetectionToDatabase(sign: CapturedSign) {
-        guard let user = currentUser else {
-            print("Error: No hay usuario logueado")
-            return
-        }
-        
-        print("Guardando: \(sign.label) para \(user.name)")
-        
-        let imageData = sign.image.jpegData(compressionQuality: 0.8)
-        
-        let newDetection = Detection(
-            label: sign.label,
-            confidence: 0.90,
-            imageData: imageData
-        )
-        
-        newDetection.user = user
-        user.detections?.append(newDetection)
-        
+        .onAppear { viewModel.startCamera() }
+        .onDisappear { viewModel.stopCamera() }
+        .animation(.spring(), value: viewModel.cameraManager.recentSigns.count)
     }
 }
+

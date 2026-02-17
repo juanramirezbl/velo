@@ -21,7 +21,12 @@ struct ContentView: View {
     var body: some View {
         Group {
             if sessionManager.isUserLoggedIn {
-                HomeView()
+                HomeView(
+                    viewModel: HomeViewModel(
+                        userRepository: UserRepository(modelContext: modelContext),
+                        sessionManager: sessionManager
+                    )
+                )
             } else {
                 LoginView(
                     viewModel: LoginViewModel(
@@ -33,3 +38,4 @@ struct ContentView: View {
         }
     }
 }
+

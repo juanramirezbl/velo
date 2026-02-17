@@ -1,16 +1,10 @@
-
 import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @AppStorage("currentUserId") private var currentUserId: String = ""
-    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
-    
-    @Query private var users: [User]
-    
-    var currentUser: User? {
-        users.first { $0.id.uuidString == currentUserId }
-    }
+    @ObservedObject var viewModel: HomeViewModel
+    @EnvironmentObject var sessionManager: SessionManager
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         NavigationStack {
@@ -23,13 +17,13 @@ struct HomeView: View {
                         .foregroundColor(.blue)
                         .padding(.top, 40)
                     
-                    Text("Ey, \(currentUser?.name ?? "Driver")")
+                    Text("Ey, \(viewModel.currentUser?.name ?? "Driver")")
                         .font(.title2)
                         .bold()
                     
                     HStack {
                         Image(systemName: "car.fill")
-                        Text(currentUser?.licensePlate ?? "Without Plate")
+                        Text(viewModel.currentUser?.licensePlate ?? "Without Plate")
                             .textCase(.uppercase)
                     }
                     .font(.headline)
@@ -41,7 +35,16 @@ struct HomeView: View {
                 }
                 
                 Spacer()
-                NavigationLink(destination: DashboardView()) {
+                
+                NavigationLink(destination:
+                    DashboardView(
+                        viewModel: DashboardViewModel(
+                            detectionRepository: DetectionRepository(modelContext: modelContext),
+                            userRepository: UserRepository(modelContext: modelContext),
+                            sessionManager: sessionManager
+                        )
+                    )
+                ) {
                     HStack {
                         Image(systemName: "steeringwheel")
                             .font(.title)
@@ -58,7 +61,14 @@ struct HomeView: View {
                     .shadow(radius: 5)
                 }
                 
-                NavigationLink(destination: HistoryView(userId: currentUserId)) {
+                NavigationLink(destination:
+                    HistoryView(
+                        viewModel: HistoryViewModel(
+                            userId: viewModel.currentUserId,
+                            detectionRepository: DetectionRepository(modelContext: modelContext)
+                        )
+                    )
+                ) {
                     HStack {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.title)
@@ -82,7 +92,7 @@ struct HomeView: View {
                 Spacer()
                 
                 Button("Log out") {
-                    isUserLoggedIn = false
+                    viewModel.logout()
                 }
                 .foregroundColor(.red)
                 .padding(.bottom, 20)
@@ -94,7 +104,3 @@ struct HomeView: View {
     }
 }
 
-#Preview {
-    HomeView()
-        .modelContainer(for: User.self, inMemory: true)
-}
