@@ -3,17 +3,32 @@ import SwiftData
 
 @main
 struct veloApp: App {
-    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
+    @StateObject private var sessionManager = SessionManager()
     
     var body: some Scene {
-        
         WindowGroup {
-            if isUserLoggedIn {
+            ContentView()
+                .modelContainer(for: [User.self, Detection.self])
+                .environmentObject(sessionManager)
+        }
+    }
+}
+
+struct ContentView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+    @Environment(\.modelContext) private var modelContext
+    
+    var body: some View {
+        Group {
+            if sessionManager.isUserLoggedIn {
                 HomeView()
-                    .modelContainer(for: [User.self, Detection.self])
             } else {
-                LoginView()
-                    .modelContainer(for: [User.self, Detection.self])
+                LoginView(
+                    viewModel: LoginViewModel(
+                        userRepository: UserRepository(modelContext: modelContext),
+                        sessionManager: sessionManager
+                    )
+                )
             }
         }
     }

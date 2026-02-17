@@ -1,12 +1,7 @@
 import SwiftUI
-import SwiftData
 
 struct LoginView: View {
-    @StateObject private var viewModel = LoginViewModel()
-    
-    @Environment(\.modelContext) private var modelContext
-    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
-    @AppStorage("currentUserId") private var currentUserId: String = ""
+    @ObservedObject var viewModel: LoginViewModel
     
     var body: some View {
         VStack(spacing: 20) {
@@ -38,7 +33,7 @@ struct LoginView: View {
             
             Spacer()
             
-            Button(action: loginUser) {
+            Button(action: { viewModel.loginUser() }) {
                 Text("Iniciar Trayecto")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -52,39 +47,5 @@ struct LoginView: View {
         }
         .padding()
     }
-    
-    func loginUser() {
-        if viewModel.validate() {
-            let inputName = viewModel.username.trimmingCharacters(in: .whitespaces)
-            let inputPlate = viewModel.licensePlate.trimmingCharacters(in: .whitespaces)
-            
-            
-            let predicate = #Predicate<User> { user in
-                user.name == inputName && user.licensePlate == inputPlate
-            }
-            let descriptor = FetchDescriptor(predicate: predicate)
-            
-            do {
-                let foundUsers = try modelContext.fetch(descriptor)
-                
-                if let existingUser = foundUsers.first {
-                    print("Usuario encontrado: \(existingUser.name). Recuperando historial...")
-                    currentUserId = existingUser.id.uuidString
-                    
-                } else {
-                    print("Usuario nuevo. Creando registro...")
-                    let newUser = User(name: inputName, licensePlate: inputPlate)
-                    modelContext.insert(newUser)
-                    try modelContext.save()
-                    currentUserId = newUser.id.uuidString
-                }
-                
-                isUserLoggedIn = true
-                
-            } catch {
-                print("Error al buscar/guardar usuario: \(error)")
-                viewModel.errorMessage = "Error de base de datos. Inténtalo de nuevo."
-            }
-        }
-    }
 }
+
