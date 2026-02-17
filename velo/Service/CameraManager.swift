@@ -3,10 +3,8 @@ import AVFoundation
 import Vision
 import UIKit
 import Combine
-import SwiftUI
 
-
-class CameraManager: NSObject, ObservableObject {
+class CameraManager: NSObject, ObservableObject, CameraManagerProtocol {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "cameraSessionQueue")
     
@@ -15,9 +13,10 @@ class CameraManager: NSObject, ObservableObject {
     
     private var visionRequests = [VNRequest]()
     private var lastDetectionTimes: [String: Date] = [:]
-    private let speechService = SpeechService()
+    private let speechService: SpeechServiceProtocol  
     
-    override init() {
+    init(speechService: SpeechServiceProtocol = SpeechService()) {
+        self.speechService = speechService
         super.init()
         setupSession()
         setupVision()
@@ -74,7 +73,7 @@ class CameraManager: NSObject, ObservableObject {
                 DetectedObject(
                     label: obs.labels.first?.identifier ?? "Unknown",
                     confidence: Double(obs.confidence),
-                    rect: obs.boundingBox,
+                    rect: obs.boundingBox
                 )
             }
             
@@ -135,3 +134,5 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
 }
+
+

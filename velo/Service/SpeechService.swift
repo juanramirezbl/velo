@@ -1,7 +1,6 @@
 import AVFoundation
 
-class SpeechService {
-    static let shared = SpeechService()
+class SpeechService: SpeechServiceProtocol {
     
     private let synthesizer = AVSpeechSynthesizer()
     
@@ -13,7 +12,7 @@ class SpeechService {
         utterance.rate = 0.50
         utterance.pitchMultiplier = 1.0
         
-        if synthesizer.isSpeaking  {
+        if synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
         
@@ -33,7 +32,6 @@ class SpeechService {
         if l.contains("prohibitory") { return "Señal de Prohibición detectada." }
         if l.contains("danger") { return "Señal de Peligro detectada." }
         if l.contains("mandatory") { return "Señal de Obligación detectada." }
-        
         
         return "Señal detectada."
     }
