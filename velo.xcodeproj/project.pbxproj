@@ -30,6 +30,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		C7BC7B8F2FD58D2E004D3B1D /* assets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = assets;
+			sourceTree = "<group>";
+		};
 		C7EE1ED82F34BD4300E5C506 /* velo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = velo;
@@ -75,6 +80,7 @@
 		C7EE1ECD2F34BD4300E5C506 = {
 			isa = PBXGroup;
 			children = (
+				C7BC7B8F2FD58D2E004D3B1D /* assets */,
 				C7EE1ED82F34BD4300E5C506 /* velo */,
 				C7EE1EE62F34BD4500E5C506 /* veloTests */,
 				C7EE1EF02F34BD4500E5C506 /* veloUITests */,
@@ -108,6 +114,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				C7BC7B8F2FD58D2E004D3B1D /* assets */,
 				C7EE1ED82F34BD4300E5C506 /* velo */,
 			);
 			name = velo;
