@@ -55,7 +55,7 @@ de conexión a internet, aprovechando el *Neural Engine* de los chips de Apple.
 
 | Inicio de sesión | Pantalla principal | Detección en vivo | Historial |
 |:---:|:---:|:---:|:---:|
-| ![Login](assets/login.PNG) | ![Home](assets/home.png) | ![Dashboard](assets/dashboard.png) | ![Historial](assets/history.png) |
+| ![Login](assets/login.PNG) | ![Home](assets/home.PNG) | ![Dashboard](assets/dashboard.PNG) | ![Historial](assets/history.PNG) |
 
 ## 🏗️ Arquitectura
 
