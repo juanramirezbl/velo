@@ -2,6 +2,9 @@ import UIKit
 import VideoToolbox
 
 extension UIImage {
+   /// Crops the image from a normalized Vision bounding box.
+   /// Converts the normalized coordinates (bottom-left origin) to pixels
+   /// (top-left origin) before cropping.
     func cropped(boundingBox: CGRect) -> UIImage? {
         guard let cgImage = self.cgImage else { return nil }
         
@@ -10,7 +13,8 @@ extension UIImage {
         
         
         let x = boundingBox.minX * width
-       
+        
+        // The Y axis is flipped because Vision uses the bottom-left corner as origin.
         let y = (1 - boundingBox.minY - boundingBox.height) * height
         let w = boundingBox.width * width
         let h = boundingBox.height * height
@@ -23,6 +27,7 @@ extension UIImage {
 }
 
 extension CMSampleBuffer {
+    /// Converts the video sample buffer into a `UIImage` with the given orientation.
     func toUIImage(orientation: UIImage.Orientation) -> UIImage? {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(self) else { return nil }
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)

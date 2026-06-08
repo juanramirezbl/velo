@@ -2,6 +2,10 @@ import Foundation
 import SwiftUI
 import Combine
 
+/// ViewModel for the driving dashboard.
+///
+/// Coordinates the camera manager, transforms the detection boxes to screen
+/// coordinates and automatically persists every newly detected sign.
 class DashboardViewModel: ObservableObject {
     @Published var cameraManager: any CameraManagerProtocol
 
@@ -10,8 +14,10 @@ class DashboardViewModel: ObservableObject {
     private let sessionManager: SessionManagerProtocol
 
     private var cancellables = Set<AnyCancellable>()
+    /// Number of recent signs in the last emission, used to detect new ones.
     private var previousSignCount: Int = 0
 
+    /// Injects the dependencies and subscribes to new signs in order to persist them.
     init(
         cameraManager: any CameraManagerProtocol = CameraManager(),
         detectionRepository: DetectionRepositoryProtocol,
@@ -25,6 +31,7 @@ class DashboardViewModel: ObservableObject {
 
         self.previousSignCount = cameraManager.recentSigns.count
 
+        // When a new sign appears, it is persisted in the database.
         cameraManager.recentSignsPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] signs in
@@ -36,6 +43,7 @@ class DashboardViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
+        // Forwards the camera manager's changes to refresh the view.
         cameraManager.objectDidChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
@@ -44,6 +52,11 @@ class DashboardViewModel: ObservableObject {
     }
 
     // MARK: - Bounding Box Calculation
+
+    /// Converts a normalized Vision box into screen coordinates.
+    ///
+    /// Adjusts the scale and offset according to the aspect ratio of the video
+    /// and the screen, so the box stays aligned with the real image.
     func calculateBox(for detection: DetectedObject, in geometry: GeometryProxy) -> CGRect {
         let screenWidth = geometry.size.width
         let screenHeight = geometry.size.height
@@ -78,16 +91,19 @@ class DashboardViewModel: ObservableObject {
 
     // MARK: - Camera Lifecycle
 
+    /// Starts the camera and the detection.
     func startCamera() {
         cameraManager.start()
     }
 
+    /// Stops the camera and the detection.
     func stopCamera() {
         cameraManager.stop()
     }
 
     // MARK: - Persistence
 
+    /// Persists a detected sign, linking it to the logged-in user.
     private func saveDetection(sign: CapturedSign) {
         guard let user = userRepository.fetchUser(byId: sessionManager.currentUserId) else {
             return
@@ -103,8 +119,7 @@ class DashboardViewModel: ObservableObject {
                 for: user
             )
         } catch {
-            // Handle error silently in production
+            // Non-critical save errors are ignored in production.
         }
     }
 }
-

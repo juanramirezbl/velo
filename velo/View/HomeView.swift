@@ -43,7 +43,7 @@ struct HomeView: View {
                     HStack {
                         Image(systemName: "steeringwheel")
                             .font(.title)
-                        Text("Start Driving")
+                        Text("Iniciar Trayecto")
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
