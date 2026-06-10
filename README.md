@@ -51,7 +51,7 @@ de conexión a internet, aprovechando el *Neural Engine* de los chips de Apple.
 
 ## 📸 Capturas de pantalla
 
-> Las capturas y el vídeo de demostración se encuentran en la carpeta [`assets/`](assets/).
+> Las capturas  se encuentran en la carpeta [`assets/`](assets/).
 
 | Inicio de sesión | Pantalla principal | Detección en vivo | Historial |
 |:---:|:---:|:---:|:---:|
